@@ -28,5 +28,7 @@ class FriendCommand(
         FriendRemoveCommand(commandManager, api, logger)
         FriendRejectCommand(commandManager, api, logger)
         FriendAcceptCommand(commandManager, api, logger)
+        FriendChatCommand(commandManager, api, logger)
+        FriendReplyCommand(commandManager, api, logger)
     }
 }

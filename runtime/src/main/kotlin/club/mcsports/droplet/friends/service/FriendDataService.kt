@@ -14,14 +14,17 @@ class FriendDataService(
     private val requests: RequestsRepository
 ) : FriendDataGrpcKt.FriendDataCoroutineImplBase() {
 
-    private val logger = LogManager.getLogger(FriendDataService::class.java)
-
     override suspend fun listFriends(request: ListFriendsRequest): ListFriendsResponse {
         val player = request.playerId.asUUID()
         val allFriends = friends.find(player)
+
+        if(allFriends.isEmpty()) {
+            throw Status.FAILED_PRECONDITION.withDescription("No friends found.")
+                .asRuntimeException()
+        }
         val startIndex = request.page * request.amount
         if (startIndex >= allFriends.size) {
-            throw Status.FAILED_PRECONDITION.withDescription("This page does not exist (Friends: ${allFriends.size} Max Page: ${allFriends.size / request.amount})")
+            throw Status.FAILED_PRECONDITION.withDescription("No friends found past page ${allFriends.size / request.amount}.")
                 .asRuntimeException()
         }
         val result = allFriends.subList(startIndex, allFriends.size).take(request.amount)
@@ -40,9 +43,15 @@ class FriendDataService(
     override suspend fun listInvites(request: ListFriendInvitesRequest): ListFriendInvitesResponse {
         val player = request.playerId.asUUID()
         val allRequests = requests.findFor(player)
+
+        if(allRequests.isEmpty()) {
+            throw Status.FAILED_PRECONDITION.withDescription("No friend requests found.")
+                .asRuntimeException()
+        }
+
         val startIndex = request.page * request.amount
         if (startIndex >= allRequests.size) {
-            throw Status.FAILED_PRECONDITION.withDescription("This page does not exist (Requests: ${allRequests.size} Max Page: ${allRequests.size / request.amount})")
+            throw Status.FAILED_PRECONDITION.withDescription("No friend requests found past page ${allRequests.size / request.amount}.")
                 .asRuntimeException()
         }
         val result = allRequests.subList(startIndex, allRequests.size).take(request.amount)

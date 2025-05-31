@@ -29,10 +29,13 @@ class ListFriendsCommand(
                     val page = context.getOrDefault("page", 1)
                     val amount = context.getOrDefault("amount", 50)
                     val friends = try {
-                        api.getData().getFriends(player.uniqueId, page - 0, amount)
+                        api.getData().getFriends(player.uniqueId, page - 1, amount)
                     } catch (e: StatusException) {
-                        context.sender().sendMessage(Component.text(e.status.description ?: "An unknown error occurred.").color(
-                            TextColor.color(0xdc2626)))
+                        context.sender().sendMessage(
+                            Component.text(e.status.description ?: "An unknown error occurred.").color(
+                                TextColor.color(0xdc2626)
+                            )
+                        )
                         return@suspendingHandler
                     }
                     player.sendMessage(Component.text("  Page $page / ${friends.pages + 1}"))

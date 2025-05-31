@@ -32,7 +32,7 @@ class MessageManager(
     private fun sendMessage(sender: CloudPlayer, receiver: CloudPlayer, message: Component) {
         val messageTag = TagResolver.resolver("message", Tag.selfClosingInserting(message))
         val senderTag = TagResolver.resolver("sender", Tag.inserting(Component.text(sender.getName())))
-        val receiverTag = TagResolver.resolver("sender", Tag.inserting(Component.text(sender.getName())))
+        val receiverTag = TagResolver.resolver("receiver", Tag.inserting(Component.text(receiver.getName())))
         val senderComponent = miniMessage.deserialize(layout.sending, messageTag, senderTag, receiverTag)
         val receiverComponent = miniMessage.deserialize(layout.receiving, messageTag, senderTag, receiverTag)
         sender.sendMessage(senderComponent)

@@ -3,6 +3,7 @@ package club.mcsports.droplet.friends.database
 import club.mcsports.droplet.friends.generated.db.tables.FriendConnections.Companion.FRIEND_CONNECTIONS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.apache.logging.log4j.LogManager
 import java.time.LocalDateTime
 import java.util.*
 
@@ -17,6 +18,7 @@ class FriendsRepository(
 ) : PlayerDataRepository<UUID, Friend> {
 
     private val friends = mutableMapOf<UUID, MutableList<Friend>>()
+    private val logger = LogManager.getLogger(FriendsRepository::class.java)
 
     override suspend fun delete(element: Friend): Boolean {
         if (friends.containsKey(element.of)) {
@@ -41,22 +43,27 @@ class FriendsRepository(
     }
 
     override fun save(element: Friend) {
-        //TODO: Figure out why this does not save
         insert(element.id, element.of, element.since)
         insert(element.of, element.id, element.since)
     }
 
     private fun insert(first: UUID, second: UUID, since: LocalDateTime) {
-        db.context.insertInto(
-            FRIEND_CONNECTIONS,
+        try {
+            db.context.insertInto(
+                FRIEND_CONNECTIONS,
 
-            FRIEND_CONNECTIONS.UNIQUE_ID, FRIEND_CONNECTIONS.FRIEND_ID, FRIEND_CONNECTIONS.BEFRIENDED_AT
-        ).values(first.toString(), second.toString(), since).onDuplicateKeyUpdate()
-            .set(FRIEND_CONNECTIONS.UNIQUE_ID, first.toString()).set(FRIEND_CONNECTIONS.FRIEND_ID, second.toString())
-            .execute()
+                FRIEND_CONNECTIONS.UNIQUE_ID, FRIEND_CONNECTIONS.FRIEND_ID, FRIEND_CONNECTIONS.BEFRIENDED_AT
+            ).values(first.toString(), second.toString(), since).onDuplicateKeyUpdate()
+                .set(FRIEND_CONNECTIONS.UNIQUE_ID, first.toString())
+                .set(FRIEND_CONNECTIONS.FRIEND_ID, second.toString())
+                .execute()
+        } catch (e: Exception) {
+            logger.error(e)
+        }
         val connections = friends[first] ?: mutableListOf()
         connections.removeIf { it.id == second }
         connections.add(Friend(second, first, since))
+        friends[first] = connections
     }
 
     override fun find(identifier: UUID): List<Friend> {

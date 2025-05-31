@@ -31,6 +31,15 @@ class FriendInteractionService(
             throw Status.FAILED_PRECONDITION.withDescription("Player ${request.friendName} is unknown.")
                 .asRuntimeException()
         }
+
+        if(player.getUniqueId() == target.getUniqueId()) {
+            player.sendMessage(
+                Component.text("You can not befriend yourself.").color(TextColor.color(0xdc2626))
+            )
+            throw Status.FAILED_PRECONDITION.withDescription("Can not befriend yourself.")
+                .asRuntimeException()
+        }
+
         if (requests.findFor(target.getUniqueId()).any { it.sender == player.getUniqueId() }) {
             player.sendMessage(
                 Component.text("You already want to be friends with ${request.friendName}.")
