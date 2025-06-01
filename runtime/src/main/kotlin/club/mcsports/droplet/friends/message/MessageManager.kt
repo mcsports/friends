@@ -40,11 +40,7 @@ class MessageManager(
     }
 
     suspend fun sendMessage(sending: UUID, receiver: String, messageJson: String) {
-        val receiverHandle = try {
-            receiver.asOnlinePlayer(playerApi)
-        } catch (_: StatusRuntimeException) {
-            null
-        }
+        val receiverHandle = receiver.asOnlinePlayerNullable(playerApi)
         val senderHandle = try {
             sending.asOnlinePlayer(playerApi)
         } catch (e: StatusRuntimeException) {

@@ -10,7 +10,7 @@ import org.incendo.cloud.kotlin.coroutines.extension.suspendingHandler
 import org.incendo.cloud.parser.standard.StringParser.stringParser
 import java.util.logging.Logger
 
-class FriendRejectCommand(
+class FriendDenyCommand(
     commandManager: CommandManager<CommandSource>,
     api: FriendsApi.Coroutine,
     logger: Logger
@@ -18,7 +18,7 @@ class FriendRejectCommand(
     init {
         commandManager.command(
             commandManager.commandBuilder("friend")
-                .literal("reject")
+                .literal("deny")
                 .required("player", stringParser())
                 .suspendingHandler { context ->
                     if (context.sender() !is Player) {

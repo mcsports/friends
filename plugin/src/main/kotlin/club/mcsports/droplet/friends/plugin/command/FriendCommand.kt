@@ -16,7 +16,7 @@ class FriendCommand(
             commandManager.commandBuilder("friend").handler { context ->
                 context.sender().sendMessage(Component.text("/friend add <player>"))
                 context.sender().sendMessage(Component.text("/friend accept <player>"))
-                context.sender().sendMessage(Component.text("/friend reject <player>"))
+                context.sender().sendMessage(Component.text("/friend deny <player>"))
                 context.sender().sendMessage(Component.text("/friend remove <player>"))
                 context.sender().sendMessage(Component.text("/friend list"))
                 context.sender().sendMessage(Component.text("/friend requests"))
@@ -26,7 +26,7 @@ class FriendCommand(
         ListRequestsCommand(commandManager, api)
         FriendAddCommand(commandManager, api, logger)
         FriendRemoveCommand(commandManager, api, logger)
-        FriendRejectCommand(commandManager, api, logger)
+        FriendDenyCommand(commandManager, api, logger)
         FriendAcceptCommand(commandManager, api, logger)
         FriendChatCommand(commandManager, api, logger)
         FriendReplyCommand(commandManager, api, logger)

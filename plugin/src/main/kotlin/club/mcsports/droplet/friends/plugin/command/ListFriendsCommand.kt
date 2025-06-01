@@ -38,13 +38,17 @@ class ListFriendsCommand(
                         )
                         return@suspendingHandler
                     }
-                    player.sendMessage(Component.text("  Page $page / ${friends.pages + 1}"))
-                    player.sendMessage(Component.empty())
                     friends.friendList.forEach { friend ->
-                        player.sendMessage(Component.text("- ${friend.name}"))
+                        var base = Component.text("${friend.name} ")
+                        base = if(friend.online) {
+                            base.append(Component.text("● Online on ${friend.server}").color(TextColor.color(0xa3e635)))
+                        }else {
+                            base.append(Component.text("● Offline").color(TextColor.color(0xdc2626)))
+                        }
+                        player.sendMessage(base)
                     }
                     player.sendMessage(Component.empty())
-                    player.sendMessage(Component.text("  Page $page / ${friends.pages + 1}"))
+                    player.sendMessage(Component.text("Showing ${friends.friendList.size} item(s) on page $page / ${friends.pages}.").color(TextColor.color(0xa3a3a3)))
                 }
         )
     }

@@ -5,6 +5,8 @@ import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
 import io.grpc.StatusException
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.TextColor
 import org.incendo.cloud.CommandManager
 import org.incendo.cloud.kotlin.coroutines.extension.suspendingHandler
@@ -29,7 +31,7 @@ class ListRequestsCommand(
                     val player = context.sender() as Player
                     val page = context.getOrDefault("page", 1)
                     val amount = context.getOrDefault("amount", 50)
-                    val friends = try {
+                    val requests = try {
                         api.getData().getRequests(player.uniqueId, page - 1, amount)
                     } catch (e: StatusException) {
                         context.sender().sendMessage(
@@ -39,13 +41,28 @@ class ListRequestsCommand(
                         )
                         return@suspendingHandler
                     }
-                    player.sendMessage(Component.text("  Page $page / ${friends.pages + 1}"))
-                    player.sendMessage(Component.empty())
-                    friends.friendList.forEach { friend ->
-                        player.sendMessage(Component.text("- ${friend.name}"))
+                    requests.friendList.forEach { friend ->
+                        player.sendMessage(
+                            Component.text("${friend.name} ")
+                                .append(
+                                    Component.text("Accept").color(TextColor.color(0xa3e635)).clickEvent(
+                                        ClickEvent.runCommand("friend accept ${friend.name}")
+                                    ).hoverEvent(HoverEvent.showText(Component.text("Befriend ${friend.name}")))
+                                        .append(Component.text(" | ")).color(TextColor.color(0xa3a3a3))
+                                        .append(
+                                            Component.text("Deny").clickEvent(
+                                                ClickEvent.runCommand("friend deny ${friend.name}")
+                                            ).hoverEvent(HoverEvent.showText(Component.text("Ignore ${friend.name}")))
+                                                .color(TextColor.color(0xdc2626))
+                                        )
+                                )
+                        )
                     }
                     player.sendMessage(Component.empty())
-                    player.sendMessage(Component.text("  Page $page / ${friends.pages + 1}"))
+                    player.sendMessage(
+                        Component.text("Showing ${requests.friendList.size} item(s) on page $page / ${requests.pages}.")
+                            .color(TextColor.color(0xa3a3a3))
+                    )
                 }
         )
     }
