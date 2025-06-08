@@ -26,7 +26,6 @@ publishing {
         create<MavenPublication>("maven") {
             from(components["java"])
             val hash = System.getenv("COMMIT_HASH")
-            print("Hash: $hash")
             version = if (hash != null) "${rootProject.version}-$hash" else rootProject.version.toString()
         }
     }
