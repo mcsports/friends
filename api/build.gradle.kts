@@ -6,6 +6,11 @@ dependencies {
     api(project(":shared"))
 }
 
+tasks.shadowJar {
+    mergeServiceFiles()
+    archiveFileName.set("${rootProject.name}-${project.name}.jar")
+}
+
 publishing {
     repositories {
         maven {
