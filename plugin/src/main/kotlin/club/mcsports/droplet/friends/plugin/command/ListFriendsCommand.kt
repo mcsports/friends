@@ -12,44 +12,52 @@ import org.incendo.cloud.parser.standard.IntegerParser.integerParser
 
 class ListFriendsCommand(
     commandManager: CommandManager<CommandSource>,
-    api: FriendsApi.Coroutine
+    api: FriendsApi.Coroutine,
+    aliases: List<String>,
 ) {
     init {
-        commandManager.command(
-            commandManager.commandBuilder("friend")
-                .literal("list")
-                .optional("page", integerParser(1))
-                .optional("amount", integerParser(1, 50))
-                .suspendingHandler { context ->
-                    if (context.sender() !is Player) {
-                        context.sender().sendMessage(Component.text("You need to be a player"))
-                        return@suspendingHandler
-                    }
-                    val player = context.sender() as Player
-                    val page = context.getOrDefault("page", 1)
-                    val amount = context.getOrDefault("amount", 50)
-                    val friends = try {
-                        api.getData().getFriends(player.uniqueId, page - 1, amount)
-                    } catch (e: StatusException) {
-                        context.sender().sendMessage(
-                            Component.text(e.status.description ?: "An unknown error occurred.").color(
-                                TextColor.color(0xdc2626)
-                            )
-                        )
-                        return@suspendingHandler
-                    }
-                    friends.friendList.forEach { friend ->
-                        var base = Component.text("${friend.name} ")
-                        base = if(friend.online) {
-                            base.append(Component.text("● Online on ${friend.server}").color(TextColor.color(0xa3e635)))
-                        }else {
-                            base.append(Component.text("● Offline").color(TextColor.color(0xdc2626)))
+        aliases.forEach { alias ->
+            commandManager.command(
+                commandManager.commandBuilder(alias)
+                    .literal("list")
+                    .optional("page", integerParser(1))
+                    .optional("amount", integerParser(1, 50))
+                    .suspendingHandler { context ->
+                        if (context.sender() !is Player) {
+                            context.sender().sendMessage(Component.text("You need to be a player"))
+                            return@suspendingHandler
                         }
-                        player.sendMessage(base)
+                        val player = context.sender() as Player
+                        val page = context.getOrDefault("page", 1)
+                        val amount = context.getOrDefault("amount", 50)
+                        val friends = try {
+                            api.getData().getFriends(player.uniqueId, page - 1, amount)
+                        } catch (e: StatusException) {
+                            context.sender().sendMessage(
+                                Component.text(e.status.description ?: "An unknown error occurred.").color(
+                                    TextColor.color(0xdc2626)
+                                )
+                            )
+                            return@suspendingHandler
+                        }
+                        friends.friendList.forEach { friend ->
+                            var base = Component.text("${friend.name} ")
+                            base = if (friend.online) {
+                                base.append(
+                                    Component.text("● Online on ${friend.server}").color(TextColor.color(0xa3e635))
+                                )
+                            } else {
+                                base.append(Component.text("● Offline").color(TextColor.color(0xdc2626)))
+                            }
+                            player.sendMessage(base)
+                        }
+                        player.sendMessage(Component.empty())
+                        player.sendMessage(
+                            Component.text("Showing ${friends.friendList.size} item(s) on page $page / ${friends.pages}.")
+                                .color(TextColor.color(0xa3a3a3))
+                        )
                     }
-                    player.sendMessage(Component.empty())
-                    player.sendMessage(Component.text("Showing ${friends.friendList.size} item(s) on page $page / ${friends.pages}.").color(TextColor.color(0xa3a3a3)))
-                }
-        )
+            )
+        }
     }
 }

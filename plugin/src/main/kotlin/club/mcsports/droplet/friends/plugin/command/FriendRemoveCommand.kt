@@ -13,26 +13,29 @@ import java.util.logging.Logger
 class FriendRemoveCommand(
     commandManager: CommandManager<CommandSource>,
     api: FriendsApi.Coroutine,
-    logger: Logger
+    logger: Logger,
+    aliases: List<String>
 ) {
     init {
-        commandManager.command(
-            commandManager.commandBuilder("friend")
-                .literal("remove")
-                .required("player", stringParser())
-                .suspendingHandler { context ->
-                    if (context.sender() !is Player) {
-                        context.sender().sendMessage(Component.text("You need to be a player"))
-                        return@suspendingHandler
+        aliases.forEach { alias ->
+            commandManager.command(
+                commandManager.commandBuilder(alias)
+                    .literal("remove")
+                    .required("player", stringParser())
+                    .suspendingHandler { context ->
+                        if (context.sender() !is Player) {
+                            context.sender().sendMessage(Component.text("You need to be a player"))
+                            return@suspendingHandler
+                        }
+                        val player = context.sender() as Player
+                        val target = context.get<String>("player")
+                        try {
+                            api.getInteraction().removeFriend(player.uniqueId, target)
+                        } catch (e: StatusException) {
+                            logger.warning(e.status.description)
+                        }
                     }
-                    val player = context.sender() as Player
-                    val target = context.get<String>("player")
-                    try {
-                        api.getInteraction().removeFriend(player.uniqueId, target)
-                    } catch (e: StatusException) {
-                        logger.warning(e.status.description)
-                    }
-                }
-        )
+            )
+        }
     }
 }

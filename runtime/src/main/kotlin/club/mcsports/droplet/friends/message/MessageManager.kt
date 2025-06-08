@@ -5,6 +5,7 @@ import app.simplecloud.droplet.player.api.PlayerApi
 import club.mcsports.droplet.friends.database.FriendsRepository
 import club.mcsports.droplet.friends.extension.asOnlinePlayer
 import club.mcsports.droplet.friends.extension.asOnlinePlayerNullable
+import club.mcsports.droplet.friends.extension.asPlayer
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import net.kyori.adventure.text.Component
@@ -40,14 +41,14 @@ class MessageManager(
     }
 
     suspend fun sendMessage(sending: UUID, receiver: String, messageJson: String) {
-        val receiverHandle = receiver.asOnlinePlayerNullable(playerApi)
+        val receiverHandle = receiver.asPlayer(playerApi)
         val senderHandle = try {
             sending.asOnlinePlayer(playerApi)
         } catch (e: StatusRuntimeException) {
             logger.warn("Tried to send a private message for a player that is not online (${sending})")
             throw e
         }
-        if (receiverHandle == null) {
+        if (receiverHandle == null || !receiverHandle.isOnline()) {
             senderHandle.sendMessage(
                 Component.text("This player is not online.").color(TextColor.color(0xdc2626))
             )
@@ -60,7 +61,11 @@ class MessageManager(
             throw StatusRuntimeException(Status.FAILED_PRECONDITION.withDescription("Not friends with $receiver."))
         }
 
-        sendMessage(senderHandle, receiverHandle, componentSerializer.deserialize(messageJson))
+        sendMessage(
+            senderHandle,
+            receiverHandle.getUniqueId().asOnlinePlayer(playerApi),
+            componentSerializer.deserialize(messageJson)
+        )
         lastMessaged[sending] = receiverHandle.getUniqueId()
         lastMessaged[receiverHandle.getUniqueId()] = sending
     }
@@ -73,8 +78,8 @@ class MessageManager(
             )
             return
         }
-        val receiverHandle = receiver.asOnlinePlayerNullable(playerApi)
-        if (receiverHandle == null) {
+        val receiverHandle = receiver.asPlayer(playerApi)
+        if (receiverHandle == null || !receiverHandle.isOnline()) {
             sender.sendMessage(Component.text("The target player is not online.").color(TextColor.color(0xdc2626)))
             lastMessaged.remove(sender.getUniqueId())
             lastMessaged.remove(receiver)
@@ -86,7 +91,7 @@ class MessageManager(
             )
             throw StatusRuntimeException(Status.FAILED_PRECONDITION.withDescription("Not friends with ${receiverHandle.getName()}."))
         }
-        sendMessage(sender, receiverHandle, message)
+        sendMessage(sender, receiverHandle.getUniqueId().asOnlinePlayer(playerApi), message)
     }
 
     suspend fun sendReply(sending: UUID, messageJson: String) {

@@ -6,6 +6,7 @@ import club.mcsports.droplet.friends.extension.asOnlinePlayer
 import club.mcsports.droplet.friends.extension.asOnlinePlayerNullable
 import club.mcsports.droplet.friends.extension.asPlayer
 import club.mcsports.droplet.friends.extension.asUUID
+import club.mcsports.droplet.friends.message.MessageLayout
 import club.mcsports.droplet.friends.message.MessageManager
 import com.mcsports.friend.v1.*
 import io.grpc.Status
@@ -32,7 +33,7 @@ class FriendInteractionService(
                 .asRuntimeException()
         }
 
-        if(player.getUniqueId() == target.getUniqueId()) {
+        if (player.getUniqueId() == target.getUniqueId()) {
             player.sendMessage(
                 Component.text("You can not befriend yourself.").color(TextColor.color(0xdc2626))
             )
@@ -49,7 +50,7 @@ class FriendInteractionService(
                 .asRuntimeException()
         }
 
-        if(friends.areFriends(player.getUniqueId(), target.getUniqueId())) {
+        if (friends.areFriends(player.getUniqueId(), target.getUniqueId())) {
             player.sendMessage(
                 Component.text("You are already friends with ${request.friendName}.").color(TextColor.color(0xdc2626))
             )
@@ -59,18 +60,18 @@ class FriendInteractionService(
 
         if (!requests.findFor(player.getUniqueId()).any { it.sender == target.getUniqueId() }) {
             requests.save(FriendRequest(player.getUniqueId(), target.getUniqueId()))
-            player.sendMessage(Component.text("Friend request sent to ${target.getName()}!"))
+            player.sendMessage(MessageLayout.prefix.append(Component.text("Friend request sent to ${target.getName()}!")))
             if (target.isOnline()) {
                 request.friendName.asOnlinePlayer(playerApi)
-                    .sendMessage(Component.text("You got a friend request from ${player.getName()}!"))
+                    .sendMessage(MessageLayout.prefix.append(Component.text("You got a friend request from ${player.getName()}!")))
             }
         } else {
             requests.delete(FriendRequest(target.getUniqueId(), player.getUniqueId()))
             friends.save(Friend(player.getUniqueId(), target.getUniqueId()))
-            player.sendMessage(Component.text("You are now friends with ${target.getName()}!"))
+            player.sendMessage(MessageLayout.prefix.append(Component.text("You are now friends with ${target.getName()}!")))
             if (target.isOnline()) {
                 request.friendName.asOnlinePlayer(playerApi)
-                    .sendMessage(Component.text("You are now friends with ${player.getName()}!"))
+                    .sendMessage(MessageLayout.prefix.append(Component.text("You are now friends with ${player.getName()}!")))
             }
         }
         return inviteFriendResponse { }
@@ -98,10 +99,10 @@ class FriendInteractionService(
 
         requests.delete(FriendRequest(target.getUniqueId(), player.getUniqueId()))
         friends.save(Friend(player.getUniqueId(), target.getUniqueId()))
-        player.sendMessage(Component.text("You are now friends with ${target.getName()}!"))
+        player.sendMessage(MessageLayout.prefix.append(Component.text("You are now friends with ${target.getName()}!")))
         if (target.isOnline()) {
             request.friendName.asOnlinePlayer(playerApi)
-                .sendMessage(Component.text("You are now friends with ${player.getName()}!"))
+                .sendMessage(MessageLayout.prefix.append(Component.text("You are now friends with ${player.getName()}!")))
         }
         return approveFriendResponse { }
     }
@@ -146,7 +147,11 @@ class FriendInteractionService(
                 .asRuntimeException()
         }
 
-        if (!friends.areFriends(player.getUniqueId(), target.getUniqueId())) {
+        if (player.getUniqueId() == target.getUniqueId() || !friends.areFriends(
+                player.getUniqueId(),
+                target.getUniqueId()
+            )
+        ) {
             player.sendMessage(
                 Component.text("You are not friends with ${request.friendName}.").color(TextColor.color(0xdc2626))
             )
@@ -181,7 +186,7 @@ class FriendInteractionService(
         }
         if (target.getConnectedServerName() != null) {
             playerApi.connectPlayer(player.getUniqueId(), target.getConnectedServerName()!!)
-            player.sendMessage(Component.text("Connecting to ${target.getName()} playing on ${target.getConnectedServerName()}!"))
+            player.sendMessage(MessageLayout.prefix.append(Component.text("Connecting to ${target.getName()} playing on ${target.getConnectedServerName()}!")))
         }
         return jumpResponse { }
     }

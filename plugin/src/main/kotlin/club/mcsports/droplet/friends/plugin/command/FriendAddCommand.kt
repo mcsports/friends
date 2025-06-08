@@ -13,27 +13,30 @@ import java.util.logging.Logger
 class FriendAddCommand(
     commandManager: CommandManager<CommandSource>,
     api: FriendsApi.Coroutine,
-    logger: Logger
+    logger: Logger,
+    aliases: List<String>
 ) {
     init {
-        commandManager.command(
-            commandManager.commandBuilder("friend")
-                .literal("add")
-                .required("player", stringParser())
-                .suspendingHandler { context ->
-                    if (context.sender() !is Player) {
-                        context.sender().sendMessage(Component.text("You need to be a player"))
-                        return@suspendingHandler
-                    }
-                    val player = context.sender() as Player
-                    val target = context.get<String>("player")
-                    try {
+        aliases.forEach { alias ->
+            commandManager.command(
+                commandManager.commandBuilder(alias)
+                    .literal("add")
+                    .required("player", stringParser())
+                    .suspendingHandler { context ->
+                        if (context.sender() !is Player) {
+                            context.sender().sendMessage(Component.text("You need to be a player"))
+                            return@suspendingHandler
+                        }
+                        val player = context.sender() as Player
+                        val target = context.get<String>("player")
+                        try {
 
-                        api.getInteraction().invite(player.uniqueId, target)
-                    } catch (e: StatusException) {
-                        logger.warning(e.status.description)
+                            api.getInteraction().invite(player.uniqueId, target)
+                        } catch (e: StatusException) {
+                            logger.warning(e.status.description)
+                        }
                     }
-                }
-        )
+            )
+        }
     }
 }
