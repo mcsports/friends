@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
 
 jobs:
   publish:
@@ -22,6 +23,10 @@ jobs:
 
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x ./gradlew
+
+      - name: Set COMMIT_HASH if on develop
+        if: github.ref == 'refs/heads/develop'
+        run: echo "COMMIT_HASH=${{ github.sha }}" >> $GITHUB_ENV
 
       - name: Publish package
         run: ./gradlew publish
