@@ -31,10 +31,9 @@ publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
-            System.getenv("COMMIT_HASH")?.let { hash ->
-                if(hash != "unspecified")
-                    version = "${rootProject.version}-$hash"
-            }
+            val hash = System.getenv("COMMIT_HASH")
+            print("Hash: $hash")
+            version = if (hash != null) "${rootProject.version}-$hash" else rootProject.version.toString()
         }
     }
 }
