@@ -30,6 +30,7 @@ class FriendDataService(
         val result = allFriends.subList(startIndex, allFriends.size).take(request.amount)
         val pages = (allFriends.size + request.amount - 1) / request.amount
         return listFriendsResponse {
+            this.totalFriends = allFriends.size
             this.pages = pages
             this.friend.addAll(result.map {
                 val player = it.id.asPlayer(api)!!
@@ -60,6 +61,7 @@ class FriendDataService(
         val result = allRequests.subList(startIndex, allRequests.size).take(request.amount)
         val pages = (allRequests.size + request.amount - 1) / request.amount
         return listFriendInvitesResponse {
+            this.totalRequests = allRequests.size
             this.pages = pages
             this.friend.addAll(result.map {
                 val player = it.sender.asPlayer(api)!!
