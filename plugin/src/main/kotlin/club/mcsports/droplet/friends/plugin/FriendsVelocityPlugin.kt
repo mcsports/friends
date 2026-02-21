@@ -21,7 +21,7 @@ import java.util.logging.Logger
 
 
 @Plugin(
-    id = "mcsports-friends", name = "Friends", version = "1.0.1", authors = ["ugede"], dependencies = [
+    id = "mcsports-friends", name = "Friends", version = "1.0.2", authors = ["ugede"], dependencies = [
         Dependency(id = "simplecloud-api")
     ]
 )
